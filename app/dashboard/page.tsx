@@ -2,9 +2,10 @@
 
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { LandingPage } from "@/components/landing/landing-page";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { DashboardHome } from "@/components/dashboard/dashboard-home";
 
-export default function Home() {
+export default function Dashboard() {
 	const { data: session, status } = useSession();
 
 	if (status === "loading") {
@@ -15,9 +16,13 @@ export default function Home() {
 		);
 	}
 
-	if (session) {
-		redirect("/dashboard");
+	if (!session) {
+		redirect("/auth/signin");
 	}
 
-	return <LandingPage />;
+	return (
+		<DashboardLayout>
+			<DashboardHome />
+		</DashboardLayout>
+	);
 }
