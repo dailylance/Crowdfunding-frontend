@@ -16,6 +16,7 @@ import {
 	Menu,
 	X,
 	Home,
+	Users,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -32,6 +33,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 		{ name: "Search", href: "/dashboard/search", icon: Search },
 		{ name: "Saved Data", href: "/dashboard/saved", icon: Database },
 		{ name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+		{ name: "User Stats", href: "/admin/user-stats", icon: Users },
 		{ name: "Settings", href: "/dashboard/settings", icon: Settings },
 	];
 

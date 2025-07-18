@@ -51,11 +51,12 @@ export default function SignUp() {
 
 			if (response.ok) {
 				setSuccess(true);
-				// Auto sign in after successful registration
+				// Auto sign in after successful registration using credentials provider
 				setTimeout(async () => {
 					await signIn("credentials", {
 						email,
 						password,
+						action: "signin", // Indicate this is a signin after signup
 						callbackUrl: "/dashboard",
 					});
 				}, 2000);

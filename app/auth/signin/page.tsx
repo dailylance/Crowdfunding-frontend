@@ -32,6 +32,7 @@ export default function SignIn() {
 			const result = await signIn("credentials", {
 				email,
 				password,
+				action: "signin",
 				redirect: false,
 			});
 
