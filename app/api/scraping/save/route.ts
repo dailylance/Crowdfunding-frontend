@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 		}
 
-		const {  results, scrapedDataIds } = await request.json();
+		const { searchId, results, scrapedDataIds } = await request.json();
 
 		// Handle both new format (direct results) and old format (scrapedDataIds)
 		if (results && Array.isArray(results)) {

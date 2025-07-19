@@ -52,7 +52,6 @@ export function ScrapingInterface() {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [loadingPlatforms, setLoadingPlatforms] = useState<boolean>(true);
 	const [stats, setStats] = useState<ScrapingStats | null>(null);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [scrapingResults, setScrapingResults] = useState<any>(null);
 	const [showResultsModal, setShowResultsModal] = useState<boolean>(false);
 
