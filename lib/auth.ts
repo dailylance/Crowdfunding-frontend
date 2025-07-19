@@ -1,9 +1,9 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
+// import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
-import { UserService } from "./services/user-service";
+// import { UserService } from "./services/user-service";
 
 // Debug environment and database connection
 console.log("🔧 NextAuth Configuration Loading...");
@@ -38,12 +38,15 @@ declare module "next-auth" {
 }
 
 export const authOptions: NextAuthOptions = {
+	// Re-enable Prisma adapter now that database is properly migrated
 	adapter: PrismaAdapter(prisma),
 	providers: [
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
 		}),
+		// Temporarily disabled until database is migrated
+		/*
 		CredentialsProvider({
 			name: "credentials",
 			credentials: {
@@ -121,6 +124,7 @@ export const authOptions: NextAuthOptions = {
 				}
 			},
 		}),
+		*/
 	],
 	session: {
 		strategy: "jwt",
@@ -151,13 +155,18 @@ export const authOptions: NextAuthOptions = {
 
 			if (user) {
 				token.id = user.id;
-				token.signupMethod = user.signupMethod;
+				token.signupMethod = user.signupMethod || "google";
 			}
 
-			// For Google OAuth, set signup method and update user
+			// For Google OAuth, set signup method (temporarily skip database operations)
 			if (account?.provider === "google" && token.email) {
+				console.log("Setting Google signup method for:", token.email);
+				token.signupMethod = "google";
+				token.id = token.id || token.sub || token.email; // Use available identifier
+
+				// TODO: Re-enable database operations after schema migration
+				/*
 				try {
-					console.log("Updating Google user signup method for:", token.email);
 					const dbUser = await prisma.user.findUnique({
 						where: { email: token.email },
 					});
@@ -173,10 +182,6 @@ export const authOptions: NextAuthOptions = {
 								},
 							});
 							token.signupMethod = "google";
-							console.log(
-								"Updated signup method to google for user:",
-								dbUser.id
-							);
 						} else {
 							token.signupMethod = dbUser.signupMethod;
 						}
@@ -184,21 +189,12 @@ export const authOptions: NextAuthOptions = {
 				} catch (error) {
 					console.error("Error updating user signup method:", error);
 				}
+				*/
 			}
 
-			// Fetch fresh user data to get signup method
-			if (token.email && !token.signupMethod) {
-				try {
-					const dbUser = await prisma.user.findUnique({
-						where: { email: token.email },
-						select: { signupMethod: true },
-					});
-					if (dbUser) {
-						token.signupMethod = dbUser.signupMethod;
-					}
-				} catch (error) {
-					console.error("Error fetching user data in JWT callback:", error);
-				}
+			// Set default signup method if not present
+			if (!token.signupMethod) {
+				token.signupMethod = account?.provider || "manual";
 			}
 
 			return token;
@@ -217,6 +213,8 @@ export const authOptions: NextAuthOptions = {
 			return session;
 		},
 	},
+
+	// Re-enable events now that database is migrated
 	events: {
 		async createUser({ user }) {
 			console.log(

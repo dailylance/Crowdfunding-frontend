@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { SearchComponent } from "@/components/dashboard/search-component";
+import { ScrapingInterface } from "@/components/dashboard/scraping-interface";
 
 export default function SearchPage() {
 	const { data: session, status } = useSession();
@@ -22,7 +22,7 @@ export default function SearchPage() {
 
 	return (
 		<DashboardLayout>
-			<SearchComponent />
+			<ScrapingInterface />
 		</DashboardLayout>
 	);
 }

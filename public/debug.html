@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Debug Search Flow</title>
+	</head>
+	<body>
+		<h1>Debug Search Flow</h1>
+		<button id="testSearch">Test Search (No Auth)</button>
+		<button id="testScraperDirect">Test Scraper Direct</button>
+		<div id="results"></div>
+
+		<script>
+			document
+				.getElementById("testSearch")
+				.addEventListener("click", async () => {
+					console.log("Testing frontend API...");
+					const results = document.getElementById("results");
+
+					try {
+						const response = await fetch("/api/scraping/search", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								platform: "kickstarter",
+								category: "technology",
+								keyword: "test",
+								language: "en",
+								enableOCR: true,
+							}),
+						});
+
+						const data = await response.json();
+						results.innerHTML = `<h3>Frontend API Response:</h3><pre>${JSON.stringify(
+							data,
+							null,
+							2
+						)}</pre>`;
+						console.log("Frontend API response:", data);
+					} catch (error) {
+						results.innerHTML = `<h3>Frontend API Error:</h3><pre>${error.message}</pre>`;
+						console.error("Frontend API error:", error);
+					}
+				});
+
+			document
+				.getElementById("testScraperDirect")
+				.addEventListener("click", async () => {
+					console.log("Testing scraper backend directly...");
+					const results = document.getElementById("results");
+
+					try {
+						const response = await fetch("http://localhost:3001/api/search", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								platform: "kickstarter",
+								category: "technology",
+								keyword: "test",
+								language: "en",
+								enableOCR: true,
+								userId: "cmd8rggfd0000i8iktbldhl9q",
+							}),
+						});
+
+						const data = await response.json();
+						results.innerHTML = `<h3>Scraper Backend Response:</h3><pre>${JSON.stringify(
+							data,
+							null,
+							2
+						)}</pre>`;
+						console.log("Scraper backend response:", data);
+					} catch (error) {
+						results.innerHTML = `<h3>Scraper Backend Error:</h3><pre>${error.message}</pre>`;
+						console.error("Scraper backend error:", error);
+					}
+				});
+		</script>
+	</body>
+</html>

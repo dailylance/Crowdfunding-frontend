@@ -43,6 +43,24 @@ interface SearchResult {
 	contact_info?: string;
 }
 
+interface ScrapedItem {
+	id?: string;
+	title?: string;
+	original_title?: string;
+	status?: string;
+	amount?: string;
+	funded_amount?: string;
+	support_amount?: string;
+	goal_amount?: string;
+	supporters?: string;
+	backers_count?: string;
+	achievement_rate?: string;
+	percentage_funded?: number;
+	url?: string;
+	project_owner?: string;
+	contact_info?: string;
+}
+
 interface SearchLog {
 	id: string;
 	timestamp: string;
@@ -107,48 +125,72 @@ export function SearchComponent() {
 		setIsSearching(true);
 		setSearchResults([]);
 		addLog(
-			`🔍 Starting enhanced search for "${searchParams.keyword}" on ${searchParams.platform}`,
+			`🔍 Starting real-time search for "${searchParams.keyword}" on ${searchParams.platform}`,
 			"info"
 		);
 
 		try {
-			// Simulate API call with enhanced experience
-			const mockResults: SearchResult[] = [
-				{
-					id: "1",
-					title: "Smart Wireless Charging Station",
-					platform: searchParams.platform,
-					status: "Live",
-					amount: "$125,840",
-					support_amount: "$200,000",
-					supporters: "1,247",
-					achievement_rate: "62.9%",
-					url: "https://example.com",
-					project_owner: "TechCorp Inc.",
-					contact_info: "contact@techcorp.com",
-				},
-				{
-					id: "2",
-					title: "Eco-Friendly Water Bottle",
-					platform: searchParams.platform,
-					status: "Funded",
-					amount: "$89,320",
-					support_amount: "$75,000",
-					supporters: "892",
-					achievement_rate: "119.1%",
-					url: "https://example.com",
-					project_owner: "GreenTech Solutions",
-					contact_info: "hello@greentech.com",
-				},
-			];
+			addLog(`📡 Calling scraping API...`, "info");
 
-			// Simulate realistic search delay
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+			// Call the real scraping API
+			const response = await fetch("/api/scraping/search", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					platform: searchParams.platform,
+					category: searchParams.category,
+					keyword: searchParams.keyword,
+					language: "en",
+					enableOCR: searchParams.enableOcr,
+				}),
+			});
 
-			setSearchResults(mockResults);
-			addLog(`✅ Found ${mockResults.length} results successfully`, "success");
-		} catch {
-			addLog("❌ Search failed. Please try again.", "error");
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.message || `HTTP ${response.status}`);
+			}
+
+			if (data.success) {
+				// Convert the scraper results to our interface format
+				const convertedResults: SearchResult[] = data.results.map(
+					(item: ScrapedItem, index: number) => ({
+						id: item.id || `result_${index}`,
+						title: item.title || item.original_title || "Unknown Project",
+						platform: data.platform,
+						status: item.status || "Unknown",
+						amount: item.amount || item.funded_amount || "$0",
+						support_amount: item.support_amount || item.goal_amount || "$0",
+						supporters: item.supporters || item.backers_count || "0",
+						achievement_rate:
+							item.achievement_rate || item.percentage_funded
+								? `${item.percentage_funded}%`
+								: "0%",
+						url: item.url || "#",
+						project_owner: item.project_owner || "Unknown",
+						contact_info: item.contact_info || "Not available",
+					})
+				);
+
+				setSearchResults(convertedResults);
+				addLog(
+					`✅ Found ${convertedResults.length} real projects from ${data.platform}!`,
+					"success"
+				);
+				addLog(`🎯 Search ID: ${data.searchId}`, "info");
+			} else {
+				throw new Error(data.message || "Search failed");
+			}
+		} catch (error) {
+			console.error("Search error:", error);
+			addLog(
+				`❌ Search failed: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`,
+				"error"
+			);
 		} finally {
 			setIsSearching(false);
 		}
