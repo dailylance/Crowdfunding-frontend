@@ -164,8 +164,50 @@ export function EnhancedScrapingResultsModal({
 				`;
 				document.body.appendChild(notification);
 
-				if (data.sheetUrl) {
-					window.open(data.sheetUrl, "_blank");
+				console.log("📊 API Response:", data);
+				console.log("📊 Sheet URL:", data.sheetUrl);
+				console.log("📊 Spreadsheet URL:", data.spreadsheet?.url);
+				
+				// Try both possible URL properties
+				const sheetUrl = data.sheetUrl || data.spreadsheet?.url;
+				if (sheetUrl) {
+					console.log("🔗 Opening Google Sheet:", sheetUrl);
+					
+					// Try to open in new tab
+					const newWindow = window.open(sheetUrl, "_blank");
+					
+					// If popup was blocked, show a clickable link
+					if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+						console.log("⚠️ Popup blocked, showing clickable link");
+						notification.innerHTML = `
+							<div style="
+								position: fixed; 
+								top: 20px; 
+								right: 20px; 
+								background: linear-gradient(135deg, #10B981, #059669); 
+								color: white; 
+								padding: 16px 24px; 
+								border-radius: 12px; 
+								box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+								z-index: 10000;
+								font-family: system-ui;
+								max-width: 400px;
+							">
+								<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+									<span style="font-size: 20px;">✅</span>
+									<strong>Google Sheets Export Successful!</strong>
+								</div>
+								<div style="font-size: 14px; opacity: 0.9;">
+									📊 ${results.count} projects exported to: ${
+							data.spreadsheet?.title || "Google Sheets"
+						}<br>
+									🔗 <a href="${sheetUrl}" target="_blank" style="color: #FCD34D; text-decoration: underline;">Click here to open Google Sheet</a>
+								</div>
+							</div>
+						`;
+					}
+				} else {
+					console.error("❌ No sheet URL found in response");
 				}
 
 				// Remove notification after 5 seconds

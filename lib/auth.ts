@@ -25,6 +25,7 @@ declare module "next-auth" {
 			email?: string | null;
 			image?: string | null;
 			signupMethod?: string;
+			accessToken?: string;
 		};
 	}
 
@@ -44,6 +45,11 @@ export const authOptions: NextAuthOptions = {
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			authorization: {
+				params: {
+					scope: 'openid email profile https://www.googleapis.com/auth/spreadsheets',
+				},
+			},
 		}),
 		// Temporarily disabled until database is migrated
 		/*

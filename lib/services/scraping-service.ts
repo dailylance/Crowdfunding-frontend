@@ -341,44 +341,10 @@ export class ScrapingService {
 		}
 	}
 
-	// Export to Google Sheets
+	// Export to Google Sheets - Now handled directly in API routes
+	// This method is deprecated and will be removed
 	static async exportToGoogleSheets(userId: string, scrapedDataIds: string[]) {
-		try {
-			// This would integrate with your existing Google Sheets service
-			// For now, we'll call the sheets API
-			const response = await fetch("http://localhost:3002/api/export", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					userId,
-					scrapedDataIds,
-				}),
-			});
-
-			const result = await response.json();
-
-			if (!result.success) {
-				throw new Error(result.error || "Export to Google Sheets failed");
-			}
-
-			// Update saved data with spreadsheet URL
-			for (const scrapedDataId of scrapedDataIds) {
-				await prisma.savedData.updateMany({
-					where: { scrapedDataId },
-					data: {
-						spreadsheetUrl: result.spreadsheetUrl,
-						exportedAt: new Date(),
-					},
-				});
-			}
-
-			return result;
-		} catch (error) {
-			console.error("Error exporting to Google Sheets:", error);
-			throw new Error("Failed to export to Google Sheets");
-		}
+		throw new Error("Google Sheets export is now handled directly in API routes. Use /api/sheets/export or /api/scraping/export/sheets instead.");
 	}
 
 	// Convert data to CSV format

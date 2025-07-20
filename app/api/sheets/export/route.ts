@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { google } from "googleapis";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -20,11 +21,23 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Get user's email for Google Sheets sharing
+		// Get user's email and access token for Google Sheets
 		const userEmail = session.user.email;
+		const accessToken = session.user.accessToken;
+
 		if (!userEmail) {
 			return NextResponse.json(
 				{ message: "User email not found in session" },
+				{ status: 400 }
+			);
+		}
+
+		if (!accessToken) {
+			return NextResponse.json(
+				{ 
+					success: false,
+					message: "Google access token not found. Please sign in with Google again to export to Google Sheets." 
+				},
 				{ status: 400 }
 			);
 		}
@@ -33,100 +46,173 @@ export async function POST(request: NextRequest) {
 			`📊 Exporting ${results.length} projects to Google Sheets for user ${userEmail}`
 		);
 
-		// Call the Google Sheets service (crowdfunding-sheets module)
-		const sheetsResponse = await fetch("http://localhost:3002/api/export", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				userEmail: userEmail,
-				jsonData: {
-					success: true,
-					platform: platform,
-					keyword: keyword,
-					count: results.length,
-					searchId: searchId,
-					results: results.map((item) => ({
-						title: item.title || item.original_title || "Unknown",
-						owner: item.project_owner || "Unknown",
-						platform: platform,
-						status: item.status || "Unknown",
-						raised: item.amount || item.funded_amount || "$0",
-						goal: item.support_amount || item.goal_amount || "$0",
-						backers: item.supporters || item.backers_count || "0",
-						progress:
-							item.achievement_rate ||
-							(item.percentage_funded ? `${item.percentage_funded}%` : "0%"),
-						location: item.location || item.owner_country || "Unknown",
-						url: item.url || "",
-						description: item.description || "",
-						start_date: item.crowdfund_start_date || "",
-						end_date: item.crowdfund_end_date || "",
-						days_left: item.days_left || "",
-					})),
+		// Initialize Google Sheets API with user's access token
+		const auth = new google.auth.OAuth2();
+		auth.setCredentials({ access_token: accessToken });
+
+		const sheets = google.sheets({ version: "v4", auth });
+
+		// Create a new spreadsheet
+		const spreadsheetTitle = `${platform} - ${keyword || "Search"} - ${new Date().toLocaleDateString()}`;
+		
+		console.log("📝 Creating new Google Sheet:", spreadsheetTitle);
+		
+		const createResponse = await sheets.spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: spreadsheetTitle,
 				},
-				title: `${platform} - ${
-					keyword || "Search"
-				} - ${new Date().toLocaleDateString()}`,
-			}),
+			},
 		});
 
-		if (!sheetsResponse.ok) {
-			const errorData = await sheetsResponse.json().catch(() => ({}));
-			throw new Error(
-				errorData.message || `Google Sheets API error: ${sheetsResponse.status}`
-			);
+		const spreadsheetId = createResponse.data.spreadsheetId;
+		const spreadsheetUrl = createResponse.data.spreadsheetUrl;
+
+		if (!spreadsheetId) {
+			throw new Error("Failed to create Google Sheet");
 		}
 
-		const sheetsData = await sheetsResponse.json();
+		console.log("✅ Google Sheet created:", spreadsheetId);
 
-		if (!sheetsData.success) {
-			// Handle Google Sheets service errors
-			throw new Error(sheetsData.error || "Google Sheets export failed");
-		}
+		// Prepare data for Google Sheets
+		const headers = [
+			"Project Title",
+			"Owner", 
+			"Platform",
+			"Status",
+			"Raised",
+			"Goal",
+			"Backers",
+			"Progress",
+			"Location",
+			"URL",
+			"Description",
+			"Start Date",
+			"End Date",
+			"Days Left"
+		];
+
+		const rows = results.map((item) => [
+			item.title || item.original_title || "Unknown",
+			item.project_owner || "Unknown",
+			platform,
+			item.status || "Unknown",
+			item.amount || item.funded_amount || "$0",
+			item.support_amount || item.goal_amount || "$0",
+			item.supporters || item.backers_count || "0",
+			item.achievement_rate || (item.percentage_funded ? `${item.percentage_funded}%` : "0%"),
+			item.location || item.owner_country || "Unknown",
+			item.url || "",
+			item.description || "",
+			item.crowdfund_start_date || "",
+			item.crowdfund_end_date || "",
+			item.days_left || "",
+		]);
+
+		const values = [headers, ...rows];
+
+		// Write data to the sheet
+		console.log("📊 Writing data to Google Sheet...");
+		
+		await sheets.spreadsheets.values.update({
+			spreadsheetId,
+			range: "Sheet1!A1",
+			valueInputOption: "RAW",
+			requestBody: { values },
+		});
+
+		// Format the header row
+		await sheets.spreadsheets.batchUpdate({
+			spreadsheetId,
+			requestBody: {
+				requests: [
+					{
+						repeatCell: {
+							range: {
+								sheetId: 0,
+								startRowIndex: 0,
+								endRowIndex: 1,
+							},
+							cell: {
+								userEnteredFormat: {
+									backgroundColor: {
+										red: 0.2,
+										green: 0.6,
+										blue: 1.0,
+									},
+									textFormat: {
+										bold: true,
+										foregroundColor: {
+											red: 1.0,
+											green: 1.0,
+											blue: 1.0,
+										},
+									},
+								},
+							},
+							fields: "userEnteredFormat(backgroundColor,textFormat)",
+						},
+					},
+					{
+						autoResizeDimensions: {
+							dimensions: {
+								sheetId: 0,
+								dimension: "COLUMNS",
+								startIndex: 0,
+								endIndex: headers.length,
+							},
+						},
+					},
+				],
+			},
+		});
 
 		console.log("✅ Google Sheets export successful");
 
 		return NextResponse.json({
 			success: true,
 			message: `Successfully exported ${results.length} projects to Google Sheets`,
-			sheetUrl: sheetsData.spreadsheet?.url,
-			sheetId: sheetsData.spreadsheet?.id,
-			spreadsheet: sheetsData.spreadsheet,
+			sheetUrl: spreadsheetUrl,
+			sheetId: spreadsheetId,
+			spreadsheet: {
+				id: spreadsheetId,
+				url: spreadsheetUrl,
+				title: spreadsheetTitle,
+			},
 		});
 	} catch (error) {
 		console.error("❌ Error exporting to Google Sheets:", error);
 
 		// Handle specific error cases
-		const errorMessage =
-			error instanceof Error ? error.message : "Unknown error";
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-		if (
-			errorMessage.includes("ECONNREFUSED") ||
-			errorMessage.includes("fetch")
-		) {
+		if (errorMessage.includes("invalid_grant") || errorMessage.includes("access_token")) {
 			return NextResponse.json(
 				{
 					success: false,
-					message:
-						"Google Sheets service is not available. Please ensure the sheets service is running on port 3002.",
+					message: "Google access token has expired. Please sign in with Google again to export to Google Sheets.",
 				},
-				{ status: 503 }
+				{ status: 401 }
 			);
 		}
 
-		if (
-			errorMessage.includes("permission") ||
-			errorMessage.includes("Permission")
-		) {
+		if (errorMessage.includes("insufficient_permissions") || errorMessage.includes("permission")) {
 			return NextResponse.json(
 				{
 					success: false,
-					message:
-						"Google Sheets export is not properly configured. Please contact support for setup assistance.",
+					message: "Insufficient permissions to create Google Sheets. Please ensure you've granted the necessary permissions.",
 				},
-				{ status: 503 }
+				{ status: 403 }
+			);
+		}
+
+		if (errorMessage.includes("quota_exceeded")) {
+			return NextResponse.json(
+				{
+					success: false,
+					message: "Google Sheets API quota exceeded. Please try again later.",
+				},
+				{ status: 429 }
 			);
 		}
 
