@@ -140,15 +140,52 @@ export class ScrapingService {
 			// Test if the scraper backend is reachable
 			console.log("🔗 Testing scraper backend connectivity...");
 
-			// Call the scraping API with userId
-			const response = await fetch(url, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(payload),
-			});
+			// Call the scraping API with userId and timeout
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
 
+			try {
+				const response = await fetch(url, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(payload),
+					signal: controller.signal,
+				});
+				clearTimeout(timeoutId);
+				return await this.handleScrapingResponse(response, request);
+			} catch (error) {
+				clearTimeout(timeoutId);
+				if (error.name === "AbortError") {
+					throw new Error(
+						"Scraping request timed out after 2 minutes. Please try with a smaller search or different keywords."
+					);
+				}
+				throw error;
+			}
+		} catch (error) {
+			console.error("❌ ScrapingService error details:");
+			if (error instanceof Error) {
+				console.error("❌ Error name:", error.name);
+				console.error("❌ Error message:", error.message);
+				console.error("❌ Error stack:", error.stack);
+				if ("cause" in error) {
+					console.error("❌ Error cause:", error.cause);
+				}
+			} else {
+				console.error("❌ Unknown error:", error);
+			}
+			throw new Error(error instanceof Error ? error.message : "Search failed");
+		}
+	}
+
+	// Handle scraping response
+	private static async handleScrapingResponse(
+		response: Response,
+		request: ScrapingRequest
+	): Promise<ScrapingResponse> {
+		try {
 			console.log("📨 Response received!");
 			console.log("📨 Response status:", response.status);
 			console.log("📨 Response ok:", response.ok);
@@ -191,18 +228,8 @@ export class ScrapingService {
 			});
 			return result;
 		} catch (error) {
-			console.error("❌ ScrapingService error details:");
-			if (error instanceof Error) {
-				console.error("❌ Error name:", error.name);
-				console.error("❌ Error message:", error.message);
-				console.error("❌ Error stack:", error.stack);
-				if ("cause" in error) {
-					console.error("❌ Error cause:", error.cause);
-				}
-			} else {
-				console.error("❌ Unknown error:", error);
-			}
-			throw new Error(error instanceof Error ? error.message : "Search failed");
+			console.error("❌ Response processing error:", error);
+			throw error;
 		}
 	}
 
@@ -214,6 +241,11 @@ export class ScrapingService {
 				orderBy: { createdAt: "desc" },
 				take: limit,
 				include: {
+					_count: {
+						select: {
+							scrapedData: true, // Count all scraped data for this search
+						},
+					},
 					scrapedData: {
 						take: 5, // Preview of scraped data
 						orderBy: { createdAt: "desc" },
@@ -221,7 +253,14 @@ export class ScrapingService {
 				},
 			});
 
-			return searches;
+			// Transform to include the actual results count
+			const searchesWithCount = searches.map((search) => ({
+				...search,
+				totalResults: search._count.scrapedData, // Use the actual count from database
+				resultCount: search._count.scrapedData, // Also set resultCount for compatibility
+			}));
+
+			return searchesWithCount;
 		} catch (error) {
 			console.error("Error getting search history:", error);
 			throw new Error("Failed to get search history");
@@ -242,7 +281,87 @@ export class ScrapingService {
 				},
 			});
 
-			return scrapedData;
+			// Transform the database data to match the expected format for the modal
+			const transformedData = scrapedData.map((item) => {
+				// Parse original data if it exists
+				let originalData = {};
+				try {
+					if (item.originalData) {
+						originalData = JSON.parse(item.originalData);
+					}
+				} catch (parseError) {
+					console.warn(
+						"Failed to parse originalData for item:",
+						item.id,
+						parseError.message
+					);
+				}
+
+				// Transform to expected format
+				return {
+					id: item.id,
+					title:
+						item.title ||
+						originalData.title ||
+						originalData.original_title ||
+						"Unknown Project",
+					original_title: originalData.original_title || item.title,
+					project_owner:
+						originalData.project_owner || originalData.owner || "Unknown",
+					url: item.url || originalData.url,
+					amount:
+						item.raised ||
+						originalData.amount ||
+						originalData.funded_amount ||
+						"$0",
+					funded_amount: item.raised || originalData.funded_amount || "$0",
+					support_amount: originalData.support_amount || "$0",
+					goal_amount:
+						item.goal || originalData.goal_amount || originalData.goal || "$0",
+					supporters:
+						item.backers ||
+						originalData.supporters ||
+						originalData.backers_count ||
+						"0",
+					backers_count: item.backers || originalData.backers_count || "0",
+					percentage_funded: originalData.percentage_funded || 0,
+					achievement_rate: originalData.achievement_rate || "0%",
+					status: originalData.status || "Unknown",
+					days_left: item.daysLeft || originalData.days_left || 0,
+					location:
+						originalData.location || originalData.owner_country || "Unknown",
+					owner_country: originalData.owner_country || "Unknown",
+					description: item.description || originalData.description,
+					crowdfund_start_date:
+						item.startDate || originalData.crowdfund_start_date,
+					crowdfund_end_date: item.endDate || originalData.crowdfund_end_date,
+					image: item.imageUrl || originalData.image,
+					// Include any additional fields from originalData
+					...originalData,
+					// Ensure the transformed fields take precedence
+					title:
+						item.title ||
+						originalData.title ||
+						originalData.original_title ||
+						"Unknown Project",
+					project_owner:
+						originalData.project_owner || originalData.owner || "Unknown",
+					amount:
+						item.raised ||
+						originalData.amount ||
+						originalData.funded_amount ||
+						"$0",
+					goal_amount:
+						item.goal || originalData.goal_amount || originalData.goal || "$0",
+					supporters:
+						item.backers ||
+						originalData.supporters ||
+						originalData.backers_count ||
+						"0",
+				};
+			});
+
+			return transformedData;
 		} catch (error) {
 			console.error("Error getting scraped data:", error);
 			throw new Error("Failed to get scraped data");

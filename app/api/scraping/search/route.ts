@@ -3,6 +3,36 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ScrapingService } from "@/lib/services/scraping-service";
 
+// Helper function to update search status
+async function updateSearchStatus(
+	platform: string,
+	keyword: string,
+	status: string,
+	results?: unknown,
+	error?: string
+) {
+	try {
+		await fetch(
+			`${
+				process.env.NEXTAUTH_URL || "http://localhost:3000"
+			}/api/scraping/status`,
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					platform,
+					keyword,
+					status,
+					results,
+					error,
+				}),
+			}
+		);
+	} catch (err) {
+		console.error("Failed to update search status:", err);
+	}
+}
+
 export async function POST(request: NextRequest) {
 	try {
 		console.log("🔍 Scraping search API called");
@@ -51,20 +81,50 @@ export async function POST(request: NextRequest) {
 			enableOCR: enableOCR !== false, // Default to true
 		};
 
+		// Set initial status as processing
+		await updateSearchStatus(platform, keyword, "processing");
+
 		console.log(
 			"🚀 Calling ScrapingService.performSearch with user:",
 			session.user.id
 		);
-		const result = await ScrapingService.performSearch(
-			session.user.id,
-			searchRequest
-		);
 
-		console.log(
-			"✅ ScrapingService result:",
-			result.success ? "Success" : "Failed"
-		);
-		return NextResponse.json(result);
+		try {
+			const result = await ScrapingService.performSearch(
+				session.user.id,
+				searchRequest
+			);
+
+			console.log(
+				"✅ ScrapingService result:",
+				result.success ? "Success" : "Failed"
+			);
+
+			// Update status based on result
+			if (result.success) {
+				await updateSearchStatus(platform, keyword, "completed", result);
+			} else {
+				await updateSearchStatus(
+					platform,
+					keyword,
+					"failed",
+					undefined,
+					"Search failed"
+				);
+			}
+
+			return NextResponse.json(result);
+		} catch (searchError) {
+			// Update status as failed
+			await updateSearchStatus(
+				platform,
+				keyword,
+				"failed",
+				undefined,
+				searchError instanceof Error ? searchError.message : "Search failed"
+			);
+			throw searchError;
+		}
 	} catch (error) {
 		console.error("❌ Error performing search:", error);
 		return NextResponse.json(

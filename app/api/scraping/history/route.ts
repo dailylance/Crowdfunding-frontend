@@ -19,9 +19,22 @@ export async function GET(request: NextRequest) {
 			limit
 		);
 
+		// Transform the data to include all necessary fields
+		const formattedHistory = history.map((item: Record<string, unknown>) => ({
+			id: item.id || item.searchId,
+			searchId: item.searchId || item.id,
+			platform: item.platform,
+			keyword: item.keyword,
+			category: item.category || null,
+			totalResults: item.totalResults || item.resultCount || 0, // Use the actual count from database
+			searchDate: item.searchDate || item.createdAt || item.created_at,
+			status: item.status || "completed",
+		}));
+
 		return NextResponse.json({
 			success: true,
-			history,
+			history: formattedHistory,
+			total: formattedHistory.length,
 		});
 	} catch (error) {
 		console.error("Error getting search history:", error);

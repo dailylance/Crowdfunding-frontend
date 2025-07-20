@@ -17,6 +17,7 @@ import {
 	X,
 	Home,
 	Users,
+	Clock,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -31,6 +32,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 	const navigation = [
 		{ name: "Dashboard", href: "/dashboard", icon: Home },
 		{ name: "Search", href: "/dashboard/search", icon: Search },
+		{ name: "Search History", href: "/dashboard/search-history", icon: Clock },
 		{ name: "Saved Data", href: "/dashboard/saved", icon: Database },
 		{ name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
 		{ name: "User Stats", href: "/admin/user-stats", icon: Users },

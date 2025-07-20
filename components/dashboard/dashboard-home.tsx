@@ -436,7 +436,7 @@ export function DashboardHome() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8'>
 								<Link href='/dashboard/search'>
 									<div className='p-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200 hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2'>
 										<div className='flex items-center gap-4 mb-6'>
@@ -453,6 +453,27 @@ export function DashboardHome() {
 										</p>
 										<div className='flex items-center text-blue-600 font-bold text-lg'>
 											<span>Start Searching</span>
+											<ArrowRight className='h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform' />
+										</div>
+									</div>
+								</Link>
+
+								<Link href='/dashboard/search-history'>
+									<div className='p-8 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl border-2 border-amber-200 hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2'>
+										<div className='flex items-center gap-4 mb-6'>
+											<div className='p-4 bg-amber-600 rounded-2xl group-hover:bg-amber-700 transition-colors shadow-lg'>
+												<Clock className='h-8 w-8 text-white' />
+											</div>
+											<h3 className='text-2xl font-bold text-amber-900'>
+												Search History
+											</h3>
+										</div>
+										<p className='text-amber-700 text-lg mb-6 leading-relaxed'>
+											View and manage all your previous searches and access
+											stored results
+										</p>
+										<div className='flex items-center text-amber-600 font-bold text-lg'>
+											<span>View History</span>
 											<ArrowRight className='h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform' />
 										</div>
 									</div>

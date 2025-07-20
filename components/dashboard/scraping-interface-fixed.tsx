@@ -22,6 +22,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Database, Download, Upload } from "lucide-react";
 import { EnhancedScrapingResultsModal } from "./enhanced-scraping-results-modal";
+import type { ScrapedProject } from "./enhanced-scraping-results-modal";
+// If you see "Module ... declares 'ScrapedProject' locally, but it is not exported."
+// You need to export ScrapedProject from enhanced-scraping-results-modal.tsx:
+// Add: export type ScrapedProject = { ... } at the top of that file.
 
 interface Platform {
 	name: string;
@@ -52,7 +56,26 @@ export function ScrapingInterface() {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [loadingPlatforms, setLoadingPlatforms] = useState<boolean>(true);
 	const [stats, setStats] = useState<ScrapingStats | null>(null);
-	const [scrapingResults, setScrapingResults] = useState<any>(null);
+	// Use the correct ScrapingResult type as expected by EnhancedScrapingResultsModal
+	// Import the type from the correct location or define it here if not exported
+	// import type { ScrapingResult } from "./enhanced-scraping-results-modal";
+
+	// If ScrapingResult is not exported, define it here:
+	// Import ScrapedProject type from the correct location
+	// Fix: Import ScrapedProject from the correct location or export it from enhanced-scraping-results-modal
+	// If ScrapedProject is only declared locally in enhanced-scraping-results-modal, you need to export it there:
+	// export type ScrapedProject = { ... }
+
+	interface ScrapingResult {
+		success: boolean;
+		platform: string;
+		count: number;
+		results: ScrapedProject[];
+	}
+
+	const [scrapingResults, setScrapingResults] = useState<ScrapingResult | null>(
+		null
+	);
 	const [showResultsModal, setShowResultsModal] = useState<boolean>(false);
 
 	// Get available categories for selected platform
@@ -134,83 +157,12 @@ export function ScrapingInterface() {
 			}
 		} catch (error) {
 			console.error("Error during search:", error);
-		} finally {
-			setIsLoading(false);
 		}
 	};
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'>
-			<div className='container mx-auto px-4 py-8 space-y-8'>
-				{/* Header with Stats */}
-				{stats && (
-					<div className='grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto'>
-						<Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg'>
-							<CardContent className='p-6'>
-								<div className='flex items-center space-x-3'>
-									<div className='p-3 bg-blue-100 rounded-lg'>
-										<Search className='h-6 w-6 text-blue-600' />
-									</div>
-									<div>
-										<p className='text-2xl font-bold text-gray-900'>
-											{stats.totalSearches}
-										</p>
-										<p className='text-sm text-gray-600'>Total Searches</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg'>
-							<CardContent className='p-6'>
-								<div className='flex items-center space-x-3'>
-									<div className='p-3 bg-green-100 rounded-lg'>
-										<Database className='h-6 w-6 text-green-600' />
-									</div>
-									<div>
-										<p className='text-2xl font-bold text-gray-900'>
-											{stats.totalScrapedItems}
-										</p>
-										<p className='text-sm text-gray-600'>Items Scraped</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg'>
-							<CardContent className='p-6'>
-								<div className='flex items-center space-x-3'>
-									<div className='p-3 bg-purple-100 rounded-lg'>
-										<Download className='h-6 w-6 text-purple-600' />
-									</div>
-									<div>
-										<p className='text-2xl font-bold text-gray-900'>
-											{stats.totalSaved}
-										</p>
-										<p className='text-sm text-gray-600'>Items Saved</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg'>
-							<CardContent className='p-6'>
-								<div className='flex items-center space-x-3'>
-									<div className='p-3 bg-orange-100 rounded-lg'>
-										<Upload className='h-6 w-6 text-orange-600' />
-									</div>
-									<div>
-										<p className='text-2xl font-bold text-gray-900'>
-											{stats.recentSearches?.length || 0}
-										</p>
-										<p className='text-sm text-gray-600'>Recent Searches</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-				)}
-
+		<div className='py-10 px-4 min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white'>
+			<div className='space-y-10'>
 				{/* Main Scraping Interface */}
 				<Card className='bg-white/80 backdrop-blur-sm border-0 shadow-xl max-w-4xl mx-auto'>
 					<CardHeader className='bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg'>

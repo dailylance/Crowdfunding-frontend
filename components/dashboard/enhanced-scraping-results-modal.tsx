@@ -29,7 +29,7 @@ import {
 	Loader2,
 } from "lucide-react";
 
-interface ScrapedProject {
+export interface ScrapedProject {
 	id?: string;
 	title?: string;
 	original_title?: string;
@@ -62,6 +62,7 @@ interface ScrapingResult {
 	count: number;
 	results: ScrapedProject[];
 	searchId?: string;
+	isFromHistory?: boolean;
 }
 
 interface EnhancedScrapingResultsModalProps {
@@ -176,13 +177,15 @@ export function EnhancedScrapingResultsModal({
 			} else {
 				// Show specific error message with better styling
 				const errorMessage = data.message || "Google Sheets export failed";
+				console.error("Google Sheets export failed with response:", data);
+
 				const notification = document.createElement("div");
 				notification.innerHTML = `
 					<div style="
 						position: fixed; 
 						top: 20px; 
 						right: 20px; 
-						background: linear-gradient(135deg, #F59E0B, #D97706); 
+						background: linear-gradient(135deg, #EF4444, #DC2626); 
 						color: white; 
 						padding: 16px 24px; 
 						border-radius: 12px; 
@@ -192,26 +195,31 @@ export function EnhancedScrapingResultsModal({
 						max-width: 400px;
 					">
 						<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-							<span style="font-size: 20px;">⚠️</span>
+							<span style="font-size: 20px;">❌</span>
 							<strong>Google Sheets Export Failed</strong>
 						</div>
 						<div style="font-size: 14px; opacity: 0.9;">
 							${errorMessage}<br><br>
-							📥 Downloading as CSV file instead...
+							<strong>Common Solutions:</strong><br>
+							• Check Google Cloud APIs are enabled<br>
+							• Verify service account permissions<br>
+							• Ensure Google Sheets service is running<br><br>
+							<strong>Troubleshooting:</strong><br>
+							• Open browser developer tools for more details<br>
+							• Contact admin if issue persists
 						</div>
 					</div>
 				`;
 				document.body.appendChild(notification);
 
-				console.log("Google Sheets export failed, falling back to CSV");
+				console.log("Google Sheets export failed:", errorMessage);
 
-				// Remove notification after 6 seconds
+				// Remove notification after 10 seconds (longer for reading troubleshooting info)
 				setTimeout(() => {
 					if (notification.parentNode) {
 						notification.parentNode.removeChild(notification);
 					}
-				}, 6000);
-				await handleCsvExport();
+				}, 10000);
 			}
 		} catch (error) {
 			console.error("Export error:", error);
@@ -233,135 +241,34 @@ export function EnhancedScrapingResultsModal({
 					max-width: 400px;
 				">
 					<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-						<span style="font-size: 20px;">❌</span>
-						<strong>Export Connection Error</strong>
+						<span style="font-size: 20px;">🔌</span>
+						<strong>Connection Error</strong>
 					</div>
 					<div style="font-size: 14px; opacity: 0.9;">
-						Unable to connect to export service.<br><br>
-						📥 Downloading as CSV file instead...
+						Cannot connect to Google Sheets service.<br><br>
+						<strong>Please check:</strong><br>
+						• Internet connection<br>
+						• Google Sheets service is running on port 3002<br>
+						• No firewall blocking the connection<br><br>
+						<strong>Technical details:</strong><br>
+						${
+							typeof error === "object" && error !== null && "message" in error
+								? (error as { message?: string }).message
+								: "Network connection failed"
+						}
 					</div>
 				</div>
 			`;
 			document.body.appendChild(notification);
 
-			// Remove notification after 6 seconds
+			// Remove notification after 10 seconds
 			setTimeout(() => {
 				if (notification.parentNode) {
 					notification.parentNode.removeChild(notification);
 				}
-			}, 6000);
-
-			// Fallback to CSV download
-			await handleCsvExport();
+			}, 10000);
 		} finally {
 			setIsExporting(false);
-		}
-	};
-
-	const handleCsvExport = async () => {
-		if (!results) return;
-
-		try {
-			const response = await fetch("/api/sheets/csv", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					searchId: results.searchId,
-					platform: results.platform,
-					keyword: results.keyword,
-					results: results.results,
-				}),
-			});
-
-			if (response.ok) {
-				// Create download link
-				const blob = await response.blob();
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = `crowdfunding_${results.platform}_${
-					results.keyword
-				}_${Date.now()}.csv`;
-				document.body.appendChild(a);
-				a.click();
-				window.URL.revokeObjectURL(url);
-				document.body.removeChild(a);
-
-				// Show success notification for CSV download
-				const notification = document.createElement("div");
-				notification.innerHTML = `
-					<div style="
-						position: fixed; 
-						top: 20px; 
-						right: 20px; 
-						background: linear-gradient(135deg, #6366F1, #4F46E5); 
-						color: white; 
-						padding: 16px 24px; 
-						border-radius: 12px; 
-						box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-						z-index: 10000;
-						font-family: system-ui;
-						max-width: 400px;
-					">
-						<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-							<span style="font-size: 20px;">📁</span>
-							<strong>CSV Downloaded Successfully!</strong>
-						</div>
-						<div style="font-size: 14px; opacity: 0.9;">
-							${results.count} projects exported as CSV file.<br>
-							💡 You can import it to Google Sheets manually.
-						</div>
-					</div>
-				`;
-				document.body.appendChild(notification);
-
-				// Remove notification after 5 seconds
-				setTimeout(() => {
-					if (notification.parentNode) {
-						notification.parentNode.removeChild(notification);
-					}
-				}, 5000);
-			} else {
-				throw new Error("CSV export failed");
-			}
-		} catch (error) {
-			console.error("CSV export error:", error);
-
-			// Show error notification for CSV export
-			const notification = document.createElement("div");
-			notification.innerHTML = `
-				<div style="
-					position: fixed; 
-					top: 20px; 
-					right: 20px; 
-					background: linear-gradient(135deg, #EF4444, #DC2626); 
-					color: white; 
-					padding: 16px 24px; 
-					border-radius: 12px; 
-					box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-					z-index: 10000;
-					font-family: system-ui;
-					max-width: 400px;
-				">
-					<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-						<span style="font-size: 20px;">❌</span>
-						<strong>Export Failed</strong>
-					</div>
-					<div style="font-size: 14px; opacity: 0.9;">
-						Unable to export data. Please try again later.
-					</div>
-				</div>
-			`;
-			document.body.appendChild(notification);
-
-			// Remove notification after 5 seconds
-			setTimeout(() => {
-				if (notification.parentNode) {
-					notification.parentNode.removeChild(notification);
-				}
-			}, 5000);
 		}
 	};
 
@@ -373,11 +280,19 @@ export function EnhancedScrapingResultsModal({
 				<DialogHeader className='bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg -m-6 mb-6 p-6'>
 					<DialogTitle className='flex items-center space-x-3 text-xl'>
 						<Database className='h-6 w-6' />
-						<span>Scraped Results - {results.platform}</span>
+						<span>
+							{results.isFromHistory ? "Stored Results" : "Scraped Results"} -{" "}
+							{results.platform}
+						</span>
 					</DialogTitle>
 					<DialogDescription className='text-blue-100 text-base'>
-						Found {results.count} projects for &ldquo;{results.keyword}&rdquo;
-						on {results.platform}
+						{results.isFromHistory ? "Viewing" : "Found"} {results.count}{" "}
+						projects for &ldquo;{results.keyword}&rdquo; on {results.platform}
+						{results.isFromHistory && (
+							<span className='ml-2 px-2 py-1 bg-blue-500 rounded-full text-xs font-medium'>
+								From History
+							</span>
+						)}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -482,15 +397,6 @@ export function EnhancedScrapingResultsModal({
 						<span>
 							{isExporting ? "Exporting..." : "Export to Google Sheets"}
 						</span>
-					</Button>
-
-					<Button
-						onClick={handleCsvExport}
-						disabled={isExporting}
-						variant='secondary'
-						className='flex items-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200 shadow-md hover:shadow-lg transition-all duration-300'>
-						<Download className='h-4 w-4' />
-						<span>Download CSV</span>
 					</Button>
 				</div>
 
