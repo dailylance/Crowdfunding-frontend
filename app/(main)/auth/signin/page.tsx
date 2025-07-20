@@ -54,24 +54,31 @@ export default function SignIn() {
 	};
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4'>
-			<div className='w-full max-w-md'>
+		<div className='min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-50/30 flex items-center justify-center p-4 relative overflow-hidden'>
+			{/* Background decoration */}
+			<div className='absolute inset-0 bg-[url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23E2E8F0" fill-opacity="0.3"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")] opacity-30'></div>
+			
+			{/* Floating elements */}
+			<div className='absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-blue-400/20 to-blue-600/20 rounded-full blur-xl animate-enhanced-float'></div>
+			<div className='absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-blue-300/20 to-blue-500/20 rounded-full blur-xl animate-enhanced-float' style={{animationDelay: '1s'}}></div>
+			
+			<div className='w-full max-w-md relative z-10'>
 				{/* Logo */}
 				<div className='text-center mb-8'>
-					<Link href='/' className='inline-flex items-center space-x-2'>
-						<div className='w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center'>
-							<TrendingUp className='w-6 h-6 text-white' />
+					<Link href='/' className='inline-flex items-center space-x-3 group'>
+						<div className='w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300'>
+							<TrendingUp className='w-8 h-8 text-white' />
 						</div>
-						<span className='text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+						<span className='text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700'>
 							CrowdFund Pro
 						</span>
 					</Link>
 				</div>
 
-				<Card className='border-2 border-white/50 backdrop-blur-sm bg-white/80'>
+				<Card className='bg-white/95 backdrop-blur-sm border border-slate-200 shadow-strong'>
 					<CardHeader className='text-center'>
-						<CardTitle className='text-2xl'>Welcome Back</CardTitle>
-						<CardDescription>
+						<CardTitle className='text-3xl font-bold text-slate-900'>Welcome Back</CardTitle>
+						<CardDescription className='text-slate-600 text-lg'>
 							Sign in to your account to continue
 						</CardDescription>
 					</CardHeader>
@@ -79,10 +86,10 @@ export default function SignIn() {
 						{/* Google Sign In */}
 						<Button
 							variant='outline'
-							className='w-full h-12 text-base'
+							className='w-full h-14 text-base border-2 border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 rounded-xl'
 							onClick={handleGoogleSignIn}
 							disabled={isLoading}>
-							<svg className='w-5 h-5 mr-2' viewBox='0 0 24 24'>
+							<svg className='w-6 h-6 mr-3' viewBox='0 0 24 24'>
 								<path
 									fill='currentColor'
 									d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'
@@ -105,10 +112,10 @@ export default function SignIn() {
 
 						<div className='relative'>
 							<div className='absolute inset-0 flex items-center'>
-								<span className='w-full border-t' />
+								<span className='w-full border-t border-slate-200' />
 							</div>
 							<div className='relative flex justify-center text-xs uppercase'>
-								<span className='bg-white px-2 text-muted-foreground'>
+								<span className='bg-white px-4 text-slate-500 font-medium'>
 									Or continue with email
 								</span>
 							</div>
@@ -116,17 +123,17 @@ export default function SignIn() {
 
 						{/* Error Message */}
 						{error && (
-							<div className='p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
+							<div className='p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl'>
 								{error}
 							</div>
 						)}
 
 						{/* Email/Password Form */}
-						<form onSubmit={handleSubmit} className='space-y-4'>
+						<form onSubmit={handleSubmit} className='space-y-5'>
 							<div>
 								<label
 									htmlFor='email'
-									className='block text-sm font-medium text-gray-700 mb-1'>
+									className='block text-sm font-semibold text-slate-700 mb-2'>
 									Email
 								</label>
 								<Input
@@ -136,14 +143,14 @@ export default function SignIn() {
 									onChange={(e) => setEmail(e.target.value)}
 									placeholder='Enter your email'
 									required
-									className='h-12'
+									className='h-14 text-base border-2 border-slate-200 bg-white hover:border-slate-300 focus:border-blue-500 transition-all duration-300 rounded-xl'
 								/>
 							</div>
 
 							<div>
 								<label
 									htmlFor='password'
-									className='block text-sm font-medium text-gray-700 mb-1'>
+									className='block text-sm font-semibold text-slate-700 mb-2'>
 									Password
 								</label>
 								<div className='relative'>
@@ -154,16 +161,16 @@ export default function SignIn() {
 										onChange={(e) => setPassword(e.target.value)}
 										placeholder='Enter your password'
 										required
-										className='h-12 pr-10'
+										className='h-14 text-base border-2 border-slate-200 bg-white hover:border-slate-300 focus:border-blue-500 transition-all duration-300 rounded-xl pr-12'
 									/>
 									<button
 										type='button'
-										className='absolute inset-y-0 right-0 pr-3 flex items-center'
+										className='absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors'
 										onClick={() => setShowPassword(!showPassword)}>
 										{showPassword ? (
-											<EyeOff className='h-4 w-4 text-gray-400' />
+											<EyeOff className='h-5 w-5' />
 										) : (
-											<Eye className='h-4 w-4 text-gray-400' />
+											<Eye className='h-5 w-5' />
 										)}
 									</button>
 								</div>
@@ -171,31 +178,32 @@ export default function SignIn() {
 
 							<Button
 								type='submit'
-								className='w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+								variant="gradient"
+								className='w-full h-14 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1'
 								disabled={isLoading}>
 								{isLoading ? "Signing In..." : "Sign In"}
 							</Button>
 						</form>
 
 						<div className='text-center text-sm'>
-							<span className='text-gray-600'>
+							<span className='text-slate-600'>
 								Don&apos;t have an account?{" "}
 							</span>
 							<Link
 								href='/auth/signup'
-								className='text-blue-600 hover:text-blue-500 font-medium'>
+								className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold transition-all duration-300'>
 								Sign up
 							</Link>
 						</div>
 					</CardContent>
 				</Card>
 
-				<div className='text-center mt-6 text-sm text-gray-500'>
-					<Link href='/' className='hover:text-gray-700'>
+				<div className='text-center mt-8 text-sm text-slate-500'>
+					<Link href='/' className='hover:text-slate-700 transition-colors font-medium'>
 						← Back to home
 					</Link>
 				</div>
 			</div>
 		</div>
 	);
-}
+} 
