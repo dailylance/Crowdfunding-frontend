@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 		}
 
-		const { scrapedDataIds } = await request.json();
+		const { scrapedDataIds, googleAccessToken } = await request.json();
 
 		if (
 			!scrapedDataIds ||
@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
 
 		const result = await ScrapingService.exportToGoogleSheets(
 			session.user.id,
-			scrapedDataIds
+			scrapedDataIds,
+			googleAccessToken
 		);
 
 		return NextResponse.json({

@@ -135,80 +135,31 @@ export const authOptions: NextAuthOptions = {
 	},
 	callbacks: {
 		async signIn({ user, account, profile }) {
-			console.log("SignIn callback:", {
-				userId: user?.id,
-				email: user?.email,
-				provider: account?.provider,
-				profile: profile?.email,
-			});
-			// For Google OAuth, we let the adapter handle user creation
-			// We'll update the signup method after the user is created
+			// ...existing code...
 			return true;
 		},
 		async jwt({ token, user, account }) {
-			console.log("JWT callback:", {
-				tokenEmail: token?.email,
-				userId: user?.id,
-				userEmail: user?.email,
-				provider: account?.provider,
-			});
-
+			// ...existing code...
 			if (user) {
 				token.id = user.id;
 				token.signupMethod = user.signupMethod || "google";
 			}
-
-			// For Google OAuth, set signup method (temporarily skip database operations)
-			if (account?.provider === "google" && token.email) {
-				console.log("Setting Google signup method for:", token.email);
-				token.signupMethod = "google";
-				token.id = token.id || token.sub || token.email; // Use available identifier
-
-				// TODO: Re-enable database operations after schema migration
-				/*
-				try {
-					const dbUser = await prisma.user.findUnique({
-						where: { email: token.email },
-					});
-
-					if (dbUser) {
-						// Update signup method if not set
-						if (!dbUser.signupMethod || dbUser.signupMethod === "manual") {
-							await prisma.user.update({
-								where: { id: dbUser.id },
-								data: {
-									signupMethod: "google",
-									lastLoginAt: new Date(),
-								},
-							});
-							token.signupMethod = "google";
-						} else {
-							token.signupMethod = dbUser.signupMethod;
-						}
-					}
-				} catch (error) {
-					console.error("Error updating user signup method:", error);
-				}
-				*/
+			// Add Google access token to JWT
+			if (account?.provider === "google" && account?.access_token) {
+				token.accessToken = account.access_token;
 			}
-
-			// Set default signup method if not present
-			if (!token.signupMethod) {
-				token.signupMethod = account?.provider || "manual";
-			}
-
+			// ...existing code...
 			return token;
 		},
 		async session({ session, token }) {
-			console.log("Session callback:", {
-				sessionEmail: session?.user?.email,
-				tokenId: token?.id,
-				tokenSignupMethod: token?.signupMethod,
-			});
-
+			// ...existing code...
 			if (token && session.user) {
 				session.user.id = token.id as string;
 				session.user.signupMethod = token.signupMethod as string;
+				// Add Google access token to session
+				if (token.accessToken) {
+					session.user.accessToken = token.accessToken as string;
+				}
 			}
 			return session;
 		},

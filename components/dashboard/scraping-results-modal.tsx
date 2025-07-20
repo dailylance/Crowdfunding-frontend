@@ -479,31 +479,55 @@ export function ScrapingResultsModal({
 							onClick={handleExportToGoogleSheets}
 							disabled={selectedItems.length === 0 || exporting}>
 							{exporting ? (
-								<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+import React, { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 							) : (
-								<ExternalLink className='mr-2 h-4 w-4' />
-							)}
-							Export to Sheets
-						</Button>
-					</div>
+const { data: session } = useSession();
 
-					<div className='flex space-x-2'>
-						<Button variant='outline' onClick={onClose}>
-							Close
-						</Button>
-						<Button
-							onClick={handleSaveToDatabase}
-							disabled={selectedItems.length === 0 || saving}>
-							{saving ? (
-								<Loader2 className='mr-2 h-4 w-4 animate-spin' />
-							) : (
-								<Save className='mr-2 h-4 w-4' />
-							)}
-							Save to Database
-						</Button>
-					</div>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
-}
+const handleExportToGoogleSheets = async () => {
+	   if (selectedItems.length === 0) {
+			   alert("Please select items to export");
+			   return;
+	   }
+
+	   try {
+			   setExporting(true);
+			   const selectedData = selectedItems.map(
+					   (index) => scrapedData[parseInt(index)]
+			   );
+
+			   const scrapedDataIds = selectedData
+					   .map((item) => item.id)
+					   .filter((id) => id !== undefined);
+
+			   // Log the access token for debugging
+			   console.log("Exporting with Google access token:", session?.user?.accessToken);
+			   // Send user's Google OAuth token from NextAuth session
+			   const response = await fetch("/api/scraping/export/sheets", {
+					   method: "POST",
+					   headers: {
+							   "Content-Type": "application/json",
+					   },
+					   body: JSON.stringify({
+							   scrapedDataIds,
+							   googleAccessToken: session?.user?.accessToken,
+					   }),
+			   });
+
+			   const result = await response.json();
+
+			   if (result.success) {
+					   alert("Successfully exported to Google Sheets");
+					   if (result.spreadsheetUrl) {
+							   window.open(result.spreadsheetUrl, "_blank");
+					   }
+			   } else {
+					   alert(result.message || "Failed to export to Google Sheets");
+			   }
+	   } catch (error) {
+			   console.error("Error exporting to Google Sheets:", error);
+			   alert("Failed to export to Google Sheets");
+	   } finally {
+			   setExporting(false);
+	   }
+};
