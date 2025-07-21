@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { google } from "googleapis";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -168,6 +169,22 @@ export async function POST(request: NextRequest) {
 		});
 
 		console.log("✅ Google Sheets export successful");
+
+		// Save export event to SavedData table
+		try {
+			await prisma.savedData.create({
+				data: {
+					userId: session.user.id,
+					title: spreadsheetTitle,
+					platform: platform,
+					spreadsheetUrl: spreadsheetUrl,
+					exportedAt: new Date(),
+				},
+			});
+			console.log("✅ Export event saved to database");
+		} catch (dbError) {
+			console.error("❌ Failed to save export event to database:", dbError);
+		}
 
 		return NextResponse.json({
 			success: true,
