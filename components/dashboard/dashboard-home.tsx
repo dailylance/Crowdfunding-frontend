@@ -32,6 +32,9 @@ import {
 	Award,
 } from "lucide-react";
 import { ScrapingInterface } from "./scraping-interface";
+import en from "@/locales/main/dashboard/en";
+import ja from "@/locales/main/dashboard/ja";
+import { useLang } from "@/components/providers/lang-provider";
 
 interface RecentSearch {
 	id: string;
@@ -51,6 +54,8 @@ interface SavedData {
 
 export function DashboardHome() {
 	const { data: session } = useSession();
+	const { lang, setLang } = useLang();
+	const t = lang === "ja" ? ja : en;
 	const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 	const [savedData, setSavedData] = useState<SavedData[]>([]);
 	const [stats, setStats] = useState({
@@ -154,10 +159,18 @@ export function DashboardHome() {
 
 	return (
 		<div className='space-y-6 w-full max-w-none'>
+			<div className='flex justify-end'>
+				<button
+					className='px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-sm font-medium mr-2'
+					onClick={() => setLang(lang === "en" ? "ja" : "en")}
+				>
+					{lang === "en" ? "日本語" : "English"}
+				</button>
+			</div>
 			<Tabs defaultValue='overview' className='w-full'>
 				<TabsList className='grid w-full grid-cols-3'>
-					<TabsTrigger value='overview'>Overview</TabsTrigger>
-					<TabsTrigger value='scraping'>Data Scraping</TabsTrigger>
+					<TabsTrigger value='overview'>{t.title}</TabsTrigger>
+					<TabsTrigger value='scraping'>{t.actions.search}</TabsTrigger>
 					<TabsTrigger value='analytics'>Analytics</TabsTrigger>
 				</TabsList>
 
@@ -170,11 +183,7 @@ export function DashboardHome() {
 							</div>
 							<div>
 								<h1 className='text-6xl md:text-7xl font-bold text-gray-900 leading-tight'>
-									Welcome Back
-									{session?.user?.name
-										? `, ${session.user.name.split(" ")[0]}`
-										: ""}
-									!
+									{t.welcome.replace("{name}", session?.user?.name ? session.user.name.split(" ")[0] : "")}
 								</h1>
 								<p className='text-2xl text-gray-600 mt-4 font-light'>
 									Ready to discover amazing crowdfunding opportunities?

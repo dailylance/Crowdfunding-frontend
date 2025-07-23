@@ -2,8 +2,13 @@
 
 import Link from "next/link";
 import { TrendingUp, Mail, Phone, MapPin, Twitter, Linkedin, Github, Globe, Shield, Zap, Database } from "lucide-react";
+import en from "@/locales/main/landing/en";
+import ja from "@/locales/main/landing/ja";
+import { useLang } from "@/components/providers/lang-provider";
 
 export function Footer() {
+	const { lang } = useLang();
+	const t = lang === "ja" ? ja : en;
 	return (
 		<footer className="bg-white border-t border-slate-200">
 			{/* Main Footer Content */}
@@ -20,8 +25,7 @@ export function Footer() {
 							</span>
 						</div>
 						<p className="text-slate-600 leading-relaxed">
-							Advanced crowdfunding analytics platform with AI-powered OCR/NLP enhancement. 
-							Extract comprehensive data from 9+ global platforms with automated exports.
+							{t.footer.companyDesc}
 						</p>
 						<div className="flex space-x-4">
 							<Link href="#" className="w-10 h-10 bg-slate-100 hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors">
@@ -38,72 +42,55 @@ export function Footer() {
 
 					{/* Platform Features */}
 					<div className="space-y-6">
-						<h3 className="text-lg font-semibold text-slate-900">Platform Features</h3>
+						<h3 className="text-lg font-semibold text-slate-900">{t.footer.featuresTitle}</h3>
 						<div className="space-y-4">
-							<Link href="/#features" className="flex items-center space-x-3 text-slate-600 hover:text-blue-600 transition-colors">
-								<Zap className="w-4 h-4" />
-								<span>AI OCR Enhancement</span>
-							</Link>
-							<Link href="/#features" className="flex items-center space-x-3 text-slate-600 hover:text-blue-600 transition-colors">
-								<Database className="w-4 h-4" />
-								<span>Multi-Platform Scraping</span>
-							</Link>
-							<Link href="/#features" className="flex items-center space-x-3 text-slate-600 hover:text-blue-600 transition-colors">
-								<Globe className="w-4 h-4" />
-								<span>Automated Exports</span>
-							</Link>
-							<Link href="/#features" className="flex items-center space-x-3 text-slate-600 hover:text-blue-600 transition-colors">
-								<Shield className="w-4 h-4" />
-								<span>Data Security</span>
-							</Link>
+							{t.footer.features.map((feature, i) => (
+								<div key={i} className="flex items-center space-x-3 text-slate-600 hover:text-blue-600 transition-colors">
+									{/* You can map icons if needed */}
+									<span>{feature}</span>
+								</div>
+							))}
 						</div>
 					</div>
 
 					{/* Supported Platforms */}
 					<div className="space-y-6">
-						<h3 className="text-lg font-semibold text-slate-900">Supported Platforms</h3>
+						<h3 className="text-lg font-semibold text-slate-900">{t.footer.platformsTitle}</h3>
 						<div className="space-y-3">
-							<div className="text-slate-600">Global Platforms</div>
+							<div className="text-slate-600">{t.footer.globalPlatforms}</div>
 							<div className="space-y-2 text-sm text-slate-500">
-								<div>• Kickstarter</div>
-								<div>• Indiegogo</div>
+								{t.footer.platforms.slice(0,2).map((p, i) => <div key={i}>• {p}</div>)}
 							</div>
-							<div className="text-slate-600 mt-4">Asian Platforms</div>
+							<div className="text-slate-600 mt-4">{t.footer.asianPlatforms}</div>
 							<div className="space-y-2 text-sm text-slate-500">
-								<div>• Makuake (Japan)</div>
-								<div>• Wadiz (Korea)</div>
-								<div>• Campfire (Japan)</div>
-								<div>• FlyingV (Taiwan)</div>
-								<div>• GreenFunding (Japan)</div>
-								<div>• ZecZec (Taiwan)</div>
-								<div>• Machi-ya (Japan)</div>
+								{t.footer.platforms.slice(2).map((p, i) => <div key={i}>• {p}</div>)}
 							</div>
 						</div>
 					</div>
 
 					{/* Contact & Company */}
 					<div className="space-y-6">
-						<h3 className="text-lg font-semibold text-slate-900">Contact & Company</h3>
+						<h3 className="text-lg font-semibold text-slate-900">{t.footer.contactTitle}</h3>
 						<div className="space-y-4">
 							<div className="flex items-center space-x-3 text-slate-600">
 								<Mail className="w-4 h-4" />
-								<span>support@crowdfundpro.com</span>
+								<span>{t.footer.email}</span>
 							</div>
 							<div className="flex items-center space-x-3 text-slate-600">
 								<Phone className="w-4 h-4" />
-								<span>+1 (555) 123-4567</span>
+								<span>{t.footer.phone}</span>
 							</div>
 							<div className="flex items-center space-x-3 text-slate-600">
 								<MapPin className="w-4 h-4" />
-								<span>San Francisco, CA</span>
+								<span>{t.footer.address}</span>
 							</div>
 						</div>
 						<div className="space-y-3">
 							<Link href="/auth/signup" className="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-								Start Free Trial
+								{t.footer.startTrial}
 							</Link>
 							<Link href="/auth/signin" className="block w-full border border-slate-300 text-slate-700 text-center py-3 px-6 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-								Sign In
+								{t.footer.signIn}
 							</Link>
 						</div>
 					</div>
@@ -115,20 +102,20 @@ export function Footer() {
 				<div className="container mx-auto px-6 py-8">
 					<div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
 						<div className="text-slate-600 text-sm">
-							© 2024 CrowdFund Pro. All rights reserved.
+							{t.footer.copyright}
 						</div>
 						<div className="flex space-x-6 text-sm">
 							<Link href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
-								Privacy Policy
+								{t.footer.privacy}
 							</Link>
 							<Link href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
-								Terms of Service
+								{t.footer.terms}
 							</Link>
 							<Link href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
-								Cookie Policy
+								{t.footer.cookie}
 							</Link>
 							<Link href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
-								Contact
+								{t.footer.contact}
 							</Link>
 						</div>
 					</div>

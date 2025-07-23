@@ -2,6 +2,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Quote } from "lucide-react";
+import en from "@/locales/main/landing/en";
+import ja from "@/locales/main/landing/ja";
+import { useLang } from "@/components/providers/lang-provider";
 
 const testimonials = [
 	{
@@ -61,15 +64,17 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+	const { lang } = useLang();
+	const t = lang === "ja" ? ja : en;
 	return (
 		<section className='py-24 bg-gradient-to-br from-slate-50 to-blue-50/30'>
 			<div className='container mx-auto px-6'>
 				<div className='text-center mb-16'>
 					<h2 className='text-4xl md:text-5xl font-bold mb-6 text-slate-900'>
-						Trusted by <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700'>Professionals</span>
+						{t.testimonials.title}
 					</h2>
 					<p className='text-xl text-slate-600 max-w-3xl mx-auto'>
-						Join thousands of professionals who rely on CrowdFund Pro for their crowdfunding research and analytics needs
+						{t.testimonials.subtitle}
 					</p>
 				</div>
 
@@ -119,22 +124,12 @@ export function TestimonialsSection() {
 				{/* Trust Indicators */}
 				<div className='mt-16 text-center'>
 					<div className='grid grid-cols-2 md:grid-cols-4 gap-8 items-center'>
-						<div className='text-center'>
-							<div className='text-3xl font-bold text-blue-600 mb-2'>98%</div>
-							<div className='text-sm text-slate-600'>Customer Satisfaction</div>
-						</div>
-						<div className='text-center'>
-							<div className='text-3xl font-bold text-emerald-600 mb-2'>24/7</div>
-							<div className='text-sm text-slate-600'>Platform Uptime</div>
-						</div>
-						<div className='text-center'>
-							<div className='text-3xl font-bold text-purple-600 mb-2'>99.9%</div>
-							<div className='text-sm text-slate-600'>Data Accuracy</div>
-						</div>
-						<div className='text-center'>
-							<div className='text-3xl font-bold text-amber-600 mb-2'>50+</div>
-							<div className='text-sm text-slate-600'>Countries Supported</div>
-						</div>
+						{t.testimonials.trust.map((item, i) => (
+							<div className='text-center' key={i}>
+								<div className='text-3xl font-bold text-blue-600 mb-2'>{item.value}</div>
+								<div className='text-sm text-slate-600'>{item.label}</div>
+							</div>
+						))}
 					</div>
 				</div>
 			</div>

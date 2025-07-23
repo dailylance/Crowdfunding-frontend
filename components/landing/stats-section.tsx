@@ -12,6 +12,9 @@ import {
 	BarChart3,
 	Zap
 } from "lucide-react";
+import en from "@/locales/main/landing/en";
+import ja from "@/locales/main/landing/ja";
+import { useLang } from "@/components/providers/lang-provider";
 
 interface Stats {
 	totalUsers: number;
@@ -27,6 +30,8 @@ interface Stats {
 }
 
 export function StatsSection() {
+	const { lang } = useLang();
+	const t = lang === "ja" ? ja : en;
 	const [stats, setStats] = useState<Stats | null>(null);
 	const [loading, setLoading] = useState(true);
 
@@ -72,10 +77,10 @@ export function StatsSection() {
 				<div className='container mx-auto px-6'>
 					<div className='text-center mb-16'>
 						<h2 className='text-4xl md:text-5xl font-bold mb-6 text-slate-900'>
-							Platform <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700'>Statistics</span>
+							{t.stats.title}
 						</h2>
 						<p className='text-xl text-slate-600 max-w-3xl mx-auto'>
-							Loading real-time statistics from our database...
+							{t.stats.loading}
 						</p>
 					</div>
 					<div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
@@ -105,10 +110,10 @@ export function StatsSection() {
 			<div className='container mx-auto px-6'>
 				<div className='text-center mb-16'>
 					<h2 className='text-4xl md:text-5xl font-bold mb-6 text-slate-900'>
-						Platform <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700'>Statistics</span>
+						{t.stats.title}
 					</h2>
 					<p className='text-xl text-slate-600 max-w-3xl mx-auto'>
-						Real-time data from our comprehensive crowdfunding analytics platform
+						{t.stats.subtitle}
 					</p>
 				</div>
 
@@ -122,7 +127,7 @@ export function StatsSection() {
 							<div className='text-3xl font-bold text-slate-900 mb-2'>
 								{formatNumber(stats.totalUsers)}
 							</div>
-							<div className='text-sm text-slate-600'>Active Users</div>
+							<div className='text-sm text-slate-600'>{t.stats.activeUsers}</div>
 						</CardContent>
 					</Card>
 
@@ -134,7 +139,7 @@ export function StatsSection() {
 							<div className='text-3xl font-bold text-slate-900 mb-2'>
 								{formatNumber(stats.totalSearches)}
 							</div>
-							<div className='text-sm text-slate-600'>Total Searches</div>
+							<div className='text-sm text-slate-600'>{t.stats.totalSearches}</div>
 						</CardContent>
 					</Card>
 
@@ -146,7 +151,7 @@ export function StatsSection() {
 							<div className='text-3xl font-bold text-slate-900 mb-2'>
 								{formatNumber(stats.totalScrapedData)}
 							</div>
-							<div className='text-sm text-slate-600'>Projects Analyzed</div>
+							<div className='text-sm text-slate-600'>{t.stats.projectsAnalyzed}</div>
 						</CardContent>
 					</Card>
 
@@ -158,7 +163,7 @@ export function StatsSection() {
 							<div className='text-3xl font-bold text-slate-900 mb-2'>
 								{formatNumber(stats.totalSavedData)}
 							</div>
-							<div className='text-sm text-slate-600'>Data Exports</div>
+							<div className='text-sm text-slate-600'>{t.stats.dataExports}</div>
 						</CardContent>
 					</Card>
 				</div>
@@ -172,8 +177,8 @@ export function StatsSection() {
 									<TrendingUp className='w-6 h-6 text-white' />
 								</div>
 								<div>
-									<h3 className='text-2xl font-bold text-slate-900'>Success Rate</h3>
-									<p className='text-slate-600'>Average project success</p>
+									<h3 className='text-2xl font-bold text-slate-900'>{t.stats.successRate}</h3>
+									<p className='text-slate-600'>{t.stats.avgSuccess}</p>
 								</div>
 							</div>
 							<div className='text-4xl font-bold text-blue-600 mb-2'>
@@ -186,7 +191,7 @@ export function StatsSection() {
 								></div>
 							</div>
 							<p className='text-sm text-slate-600'>
-								Based on {formatNumber(stats.totalScrapedData)} analyzed projects
+								{t.stats.basedOn.replace("{count}", formatNumber(stats.totalScrapedData))}
 							</p>
 						</CardContent>
 					</Card>
@@ -198,8 +203,8 @@ export function StatsSection() {
 									<Target className='w-6 h-6 text-white' />
 								</div>
 								<div>
-									<h3 className='text-2xl font-bold text-slate-900'>Average Funding</h3>
-									<p className='text-slate-600'>Per successful project</p>
+									<h3 className='text-2xl font-bold text-slate-900'>{t.stats.avgFunding}</h3>
+									<p className='text-slate-600'>{t.stats.perProject}</p>
 								</div>
 							</div>
 							<div className='text-4xl font-bold text-emerald-600 mb-2'>
@@ -207,7 +212,7 @@ export function StatsSection() {
 							</div>
 							<div className='flex items-center text-sm text-slate-600'>
 								<Zap className='w-4 h-4 mr-2 text-amber-500' />
-								Calculated from successful campaigns
+								{t.stats.calculatedFrom}
 							</div>
 						</CardContent>
 					</Card>
@@ -222,8 +227,8 @@ export function StatsSection() {
 									<BarChart3 className='w-6 h-6 text-white' />
 								</div>
 								<div>
-									<h3 className='text-2xl font-bold text-slate-900'>Top Platforms</h3>
-									<p className='text-slate-600'>Most analyzed platforms</p>
+									<h3 className='text-2xl font-bold text-slate-900'>{t.stats.topPlatforms}</h3>
+									<p className='text-slate-600'>{t.stats.mostAnalyzed}</p>
 								</div>
 							</div>
 							<div className='space-y-4'>
@@ -262,8 +267,8 @@ export function StatsSection() {
 									<BarChart3 className='w-6 h-6 text-white' />
 								</div>
 								<div>
-									<h3 className='text-2xl font-bold text-slate-900'>Top Categories</h3>
-									<p className='text-slate-600'>Most popular categories</p>
+									<h3 className='text-2xl font-bold text-slate-900'>{t.stats.topCategories}</h3>
+									<p className='text-slate-600'>{t.stats.mostPopular}</p>
 								</div>
 							</div>
 							<div className='space-y-4'>
@@ -300,31 +305,31 @@ export function StatsSection() {
 				<div className='mt-16 text-center'>
 					<Card className='bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 shadow-soft'>
 						<CardContent className='p-8'>
-							<h3 className='text-2xl font-bold text-slate-900 mb-4'>Recent Activity</h3>
+							<h3 className='text-2xl font-bold text-slate-900 mb-4'>{t.stats.recentActivity}</h3>
 							<div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
 								<div className='text-center'>
 									<div className='text-2xl font-bold text-blue-600 mb-1'>
 										{formatNumber(stats.recentSearches)}
 									</div>
-									<div className='text-sm text-slate-600'>Searches This Week</div>
+									<div className='text-sm text-slate-600'>{t.stats.searchesThisWeek}</div>
 								</div>
 								<div className='text-center'>
 									<div className='text-2xl font-bold text-emerald-600 mb-1'>
 										{formatNumber(stats.recentUsers)}
 									</div>
-									<div className='text-sm text-slate-600'>New Users This Week</div>
+									<div className='text-sm text-slate-600'>{t.stats.newUsersThisWeek}</div>
 								</div>
 								<div className='text-center'>
 									<div className='text-2xl font-bold text-purple-600 mb-1'>
 										{formatNumber(stats.totalScrapedData)}
 									</div>
-									<div className='text-sm text-slate-600'>Total Projects</div>
+									<div className='text-sm text-slate-600'>{t.stats.totalProjects}</div>
 								</div>
 								<div className='text-center'>
 									<div className='text-2xl font-bold text-amber-600 mb-1'>
 										{formatNumber(stats.totalSavedData)}
 									</div>
-									<div className='text-sm text-slate-600'>Data Exports</div>
+									<div className='text-sm text-slate-600'>{t.stats.totalExports}</div>
 								</div>
 							</div>
 						</CardContent>
