@@ -90,21 +90,13 @@ export function LandingPage() {
                   <Button
                     variant="gradient"
                     size="xl"
-                    className="text-lg px-12 py-5 font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                    className="text-lg cursor-pointer px-12 py-5 font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <Globe className="w-6 h-6 mr-3" />
                     Start Scraping
                   </Button>
                 </Link>
-                <Button
-                  variant="outline"
-                  size="xl"
-                  className="text-lg px-12 py-5 border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 font-semibold rounded-2xl transition-all duration-300"
-                >
-                  <Play className="w-6 h-6 mr-3" />
-                  View Demo
-                </Button>
-              </div>
+               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
@@ -184,8 +176,8 @@ export function LandingPage() {
               <h3 className="text-3xl font-bold text-slate-900 mb-8">
                 {t.platforms.title}
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-4xl mx-auto">
-                {t.platforms.platforms.map((platform, i) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                {t.platforms.platforms.map((platform) => (
                   <div
                     key={platform.name}
                     className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1"
@@ -251,7 +243,7 @@ export function LandingPage() {
           <TestimonialsSection />
         </div>
 
-        {/* Pricing Section */}
+        {/* Pricing Section
         <section
           id="pricing"
           className="py-24 bg-white/80 backdrop-blur-sm scroll-mt-24"
@@ -308,7 +300,7 @@ export function LandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* CTA Section */}
         <section className="py-24 bg-gradient-to-r from-blue-600 to-blue-700 relative overflow-hidden">
@@ -334,14 +326,14 @@ export function LandingPage() {
                     {t.cta.startTrial}
                   </Button>
                 </Link>
-                <Button
+                {/* <Button
                   variant="glass"
                   size="xl"
                   className="text-lg px-12 py-5 font-semibold rounded-2xl transition-all duration-300"
                 >
                   <Users className="w-6 h-6 mr-3" />
                   {t.cta.contactSales}
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
